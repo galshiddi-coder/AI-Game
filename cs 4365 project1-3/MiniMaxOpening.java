@@ -1,0 +1,550 @@
+//Ghaida Alshiddi
+//AI Project
+//3/31/2022
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class MiniMaxOpening {
+   
+    //used for static estmation eval
+   static int num = 0;
+   //static estmation function used for minimax
+   public static int StaticEst (char [] board, int depth){
+
+      int blackPieces = 0;
+      int whitePieces = 0;
+      //loop through the board and count the # of white and black pieces
+      for (int i=0; i< board.length; i++) {
+           if(board[i]=='B'){
+               blackPieces++;
+           }
+           else if(board[i]=='W'){
+               whitePieces++;
+           }
+       }
+       return (whitePieces -blackPieces);
+   }
+
+   //returns the final board output and writes the board on a file
+   public static char [] BoardOutput(ArrayList<char[]> board) {
+       char [] output = new char [20];
+       //will change until minimax finds the best path
+       for (int i = 0; i < board.size(); i++) {
+           output = board.get(i);
+       }
+       //writes the output file
+       try {
+        FileWriter write = new FileWriter("board2.txt");
+        write.write(output);
+        write.close();
+        } catch (IOException e) {
+        // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return output;
+    }
+    
+   //checks if we reached the leaf node 
+   public static Boolean Leaf(int depth) {
+       if (depth == 0) {
+           return true;
+       }
+       return false;
+    }
+
+   //get list of empty cells 
+   public static ArrayList <Character> EmptyCell(char [] b) {
+ 
+       ArrayList <Character> nList = new ArrayList<>();
+       for (int j = 0; j < b.length; j++) {
+           if(b[j]=='x'){
+               nList.add(b[j]);
+           }
+       }
+       return nList;
+   }
+ 
+   //board = child
+   //minimizer. choose the least value of the nodes and pass it to MaxMin
+   public static int MinMax (char [] board, List <char[]> possibleLoc, int depth){
+       //a list the keeps track of the visited nodes
+       ArrayList <char[]> output = new ArrayList<>();
+       int v = 10000;
+       //if the node is leaf return the static estimation func
+       if (Leaf(depth)) {
+           num++; //each time we reach a leaf nodes increment the # of visited nodes
+           return StaticEst(board, depth);
+       }
+       //if node isn't leaf
+       else{
+           //get the children of the current board
+            possibleLoc = new ArrayList<>();
+            //the children of white piece (current board) is black piecese (minimizer)
+            possibleLoc = BlackMove(board);
+            //loop through each child and get their value
+            for (char [] child : possibleLoc) {
+                int eval = MaxMin(child, possibleLoc, depth-1);
+                //if MaxMin value is less than v, then add node to the list
+                if(v> eval){
+                    output.add(child);
+                }
+                //assign v to the least value of v or MaxMin
+                v = Math.min(v, eval);
+            }
+            //get the final board
+            BoardOutput(output);
+            return v;
+       }
+
+   }
+
+   //maximizer. choose the max value of nodes and pass it to MinMax
+   public static int MaxMin(char [] board, List <char []> possibleLoc, int depth){
+
+       int v =-10000;
+       //a list the keeps track of the visited nodes       
+       ArrayList <char[]> output = new ArrayList<>();
+
+       //if the node is leaf return the static estimation func
+       if (Leaf(depth)) {
+           num++;//each time we reach a leaf nodes increment the # of visited nodes
+           return StaticEst(board, depth);
+        }
+       //only access once if depth is 2
+       //if node isn't leaf
+       else{ 
+           //children of current board
+           possibleLoc = new ArrayList<>();
+            //the children of the inital board, or children of
+            //the black piece (current board) is white piecese (maximizer)
+           possibleLoc = GenerateMovesOpening(board);
+            //loop through each child and get their value
+           for (char [] c : possibleLoc) {
+                int eval = MinMax(c, possibleLoc, depth-1);
+                //if MaxMin value is less than v, then add node to the list
+               if(v<eval){
+                    output.add(c);
+                }
+               //assign v to the max value of v or MaxMin
+               v = Math.max(v, eval);
+            }
+            //get the final board
+            BoardOutput(output);
+           return v;
+       }
+   }
+   
+   //call in main, returns the final board
+   public static int MiniMax (char [] board, int depth){
+      
+      List <char[]> possibleLoc = new ArrayList<>();
+ 
+       return MaxMin(board, possibleLoc, depth);
+   }
+
+   //checks if the current node (board piece) is in mill
+   public static Boolean closeMill (int loc, char board[]){
+       if(board[loc]=='x'){
+           return false;
+       }
+       char C = board[loc];
+       switch (loc){
+           //a0
+           case 0:
+           if(board[2]==C && board[4]==C){
+               return true;
+           }
+           else if (board[6]==C && board[18]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //g0
+           case 1:
+ 
+           if(board[3]==C && board[5]==C){
+               return true;
+           }
+           else if (board[11]==C && board[20]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //b1
+           case 2:
+ 
+           if(board[0]==C && board[4]==C){
+               return true;
+           }
+           else if (board[7]==C && board[15]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //f1
+           case 3:
+ 
+           if(board[5]==C && board[1]==C){
+               return true;
+           }
+           else if (board[10]==C && board[17]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //c2
+           case 4:
+ 
+           if(board[0]==C && board[2]==C){
+               return true;
+           }
+           else if (board[8]==C && board[12]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+ 
+           //e2
+           case 5:
+ 
+           if(board[3]==C && board[1]==C){
+               return true;
+           }
+           else if (board[9]==C && board[14]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //a3
+           case 6:
+ 
+           if(board[0]==C && board[18]==C){
+               return true;
+           }
+           else if (board[7]==C && board[8]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //b3
+           case 7:
+ 
+           if(board[6]==C && board[8]==C){
+               return true;
+           }
+           else if (board[2]==C && board[15]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //c3
+           case 8:
+ 
+           if(board[4]==C && board[12]==C){
+               return true;
+           }
+           else if (board[6]==C && board[7]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //c2
+           case 9:
+ 
+           if(board[5]==C && board[14]==C){
+               return true;
+           }
+           else if (board[10]==C && board[11]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //f3
+           case 10:
+ 
+           if(board[3]==C && board[17]==C){
+               return true;
+           }
+           else if (board[9]==C && board[11]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //g3
+           case 11:
+ 
+           if(board[1]==C && board[20]==C){
+               return true;
+           }
+           else if (board[9]==C && board[10]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+           //c4
+           case 12:
+ 
+           if(board[4]==C && board[8]==C){
+               return true;
+           }
+           else if (board[13]==C && board[14]==C){
+               return true;
+           }
+           else if (board[18]==C && board[15]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+ 
+          //d4
+           case 13:
+ 
+          if(board[12]==C && board[14]==C){
+              return true;
+          }
+          else if (board[16]==C && board[19]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+          //e4
+           case 14:
+ 
+          if(board[12]==C && board[13]==C){
+              return true;
+          }
+          else if (board[9]==C && board[5]==C){
+              return true;
+          }
+          else if (board[17]==C && board[20]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+           //b5
+           case 15:
+ 
+           if(board[2]==C && board[7]==C){
+               return true;
+           }
+           else if (board[18]==C && board[12]==C){
+               return true;
+           }
+           else if (board[16]==C && board[17]==C){
+               return true;
+           }
+           else{
+               return false;
+           }
+          //d5
+           case 16:
+ 
+          if(board[15]==C && board[17]==C){
+              return true;
+          }
+          else if (board[19]==C && board[13]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+          //f5
+           case 17:
+ 
+          if(board[20]==C && board[14]==C){
+              return true;
+          }
+          else if (board[3]==C && board[10]==C){
+              return true;
+          }
+          else if (board[15]==C && board[16]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+          //a6       
+           case 18:
+ 
+          if(board[0]==C && board[6]==C){
+              return true;
+          }
+          else if (board[15]==C && board[12]==C){
+              return true;
+          }
+          else if (board[19]==C && board[20]==C){
+              return true;
+          }
+          else{
+              return false;
+          } 
+          //d6
+           case 19:
+ 
+          if(board[18]==C && board[20]==C){
+              return true;
+          }
+          else if (board[16]==C && board[13]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+          //g6        
+           case 20:
+ 
+          if(board[18]==C && board[19]==C){
+              return true;
+          }
+          else if (board[17]==C && board[14]==C){
+              return true;
+          }
+          else if (board[11]==C && board[1]==C){
+              return true;
+          }
+          else{
+              return false;
+          }
+ 
+       }
+       return false;
+   }
+ 
+   // remove a black piece(that is not in mill), when white pieces are in mill 
+   public static List <char []> generateRemove (char board[], List <char[]> L){
+       //a list of the new boards
+       L = new ArrayList<>();
+       // a second board
+       char b [];
+       //loop through the current board
+       for (int i=0; i< board.length; i++) {
+           //copy board element into b
+           b = board.clone();
+           if(board[i]=='B'){
+               //delete if b isn't in a mill
+               if (!closeMill(i, board)){
+                   b[i] = 'x';
+                   //new board
+                   L.add(b);
+               }
+            }
+            //if piece isn't black, then add it to the new board
+            else{
+                L.add(b);
+            }  
+       } 
+       return L;
+   }
+
+   // returns new position for white pieces
+   public static List <char[]> GenerateMovesOpening (char pos[]){
+       List <char[]> L =GenerateAdd(pos);
+       return L;
+   }
+  
+   //looks for an empty cell, then adds white piece to it
+   public static List <char []> GenerateAdd (char pos[]){
+       //a list of boards
+       List <char []> L = new ArrayList<>();
+       // a second board
+       char board [];
+
+       //loop through the current board
+       for (int j=0; j< pos.length; j++) {
+           //copy pos element into board
+           board = pos.clone();
+           //if empty, set the location = W
+           if(pos[j] == 'x'){
+               board[j] = 'W';
+               //if white pieces form a mill, then L is list of all board options to w/o a B
+               if (closeMill(j, board)){
+                   L = generateRemove(board, L);
+               }
+               //if W isn't in a mill, then add the board to the list
+               else{
+                   L.add(board);
+               }
+           } 
+       }
+       return L;
+   }
+
+   //returns possible moves of B
+   public static List <char []> BlackMove (char pos[]){
+        List <char []> L = new ArrayList<>();
+        List <char []> L2 = new ArrayList<>();
+        char tempb [] =pos.clone();
+        //first swap all W to B, and B to W, and call the white move generator
+        for (int j=0; j< pos.length; j++) {
+            if(pos[j] == 'W'){
+                tempb[j] = 'B';
+            }
+            else if(pos[j]== 'B'){
+                tempb[j] = 'W'; 
+            }
+        }
+        //show all possible board options 
+        L = GenerateMovesOpening(tempb);
+        //return W to B snd B to W.
+        for (int j = 0; j < L.size(); j++) { 
+            char [] current = L.get(j);
+           //copy current element into tempb
+            tempb =current.clone();
+            //loop through each board, and return the pieces W to B and B to W
+            for (int n = 0; n < current.length; n++) {
+                if (current[n]== 'W') {
+                    tempb[n]='B';
+                }
+                else if(current[n]== 'B'){
+                  tempb[n] = 'W'; 
+                }
+            }
+        // add each new board to this list
+        L2.add(tempb);
+    }
+    return L2;
+}
+ 
+   public static void main(String[] args) throws IOException {
+
+        char [] b = new char[20];
+        //file name
+        String name = "board1.txt";
+        File board = new File (name);
+
+        try {
+            //read input file
+            Scanner r = new Scanner(board);
+            while(r.hasNextLine()){
+                //convert the data to char array
+                String file = r.nextLine();
+                b = file.toCharArray();
+                System.out.println("MINIMAX estimate:");
+                System.out.println( MiniMax(b, 4));
+                System.out.println("Positions evaluated by static estimation: " + num);
+            }
+        } finally{
+
+        }
+    }
+}
+
